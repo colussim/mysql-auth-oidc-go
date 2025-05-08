@@ -22,6 +22,10 @@ sequenceDiagram
     MySQL-->>Driver: Auth success or failure
     Driver-->>UserApp: Connection established or error
 ```
+Legend:
+
+- [0x01][len][JWT token] = capability flag, length-encoded JWT token (see protocol)
+- The driver reads the JWT from the file, builds the correct packet, and sends it as required by the MySQL OIDC plugin.
 
 ## Protocol Reference
 
@@ -149,7 +153,39 @@ case "authentication_openid_connect":
 
 ---
 
+## Requirements
+
+Go 1.22 or higher. 
+MySQL Enterprise 9.1 or higer (for support OpenID Connect Plugin)
+MySQL enterprise OpenID Connect Pluggable Authentication plugin
+
+## Installation
+
+Simple install the package to your [$GOPATH](https://github.com/golang/go/wiki/GOPATH) with the [go tool](https://golang.org/cmd/go/) from shell:
+
+```bash
+go get -u github.com/colussim/mysql-auth-oidc-go
+```
+
+Make sure [Git is installed ](https://git-scm.com/downloads)on your machine and in your system's PATH.
+
+---
+
 ## Usage
+
+This fork is a drop-in replacement of the original [Go MySQL Driver](https://github.com/go-sql-driver/mysql), with added support for JWT-based authentication using the MySQL OpenID Connect Pluggable Authentication plugin.
+
+It implements Go's `database/sql/driver` interface. Simply import the driver and use it as usual with the `database/sql` package:
+
+```go
+import (
+    "database/sql"
+    _ "github.com/colussim/mysql-auth-oidc-go"
+)
+
+db, err := sql.Open("mysql", "<DSN>")
+```
+
 
 To use JWT authentication with the MySQL OpenID Connect plugin in your Go application:
 
@@ -177,7 +213,7 @@ In your Go code, use the DSN as usual with `sql.Open`:
 escapedTokenFilePath :=url.QueryEscape("/tmp/mysql_token.txt")
 dsn := fmt.Sprintf("%s@tcp(%s)/%s?tls=custom&allowCleartextPasswords=1&auth_client_plugin=authentication_openid_connect_client&authentication_openid_connect_client_id_token_file=%s",
     "mysql_app",
-    "mysqlldap.demos.oramysql01.com:3306",
+    "mysql.demos.com:3306",
     "identity_demo",
     escapedTokenFilePath,
 )
