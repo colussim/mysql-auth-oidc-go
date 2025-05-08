@@ -1,0 +1,1 @@
+# mysql-auth-oidc-go
