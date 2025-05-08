@@ -7,6 +7,22 @@ The main goal of this fork is to enable Go applications to connect securely to M
 
 This documentation describes the protocol, the required code modifications, and how to use the new features in your Go applications.
 
+```mermaid
+sequenceDiagram
+    participant UserApp as Go Application
+    participant Driver as go-sql-driver/mysql (fork)
+    participant MySQL as MySQL Server (OIDC Plugin)
+
+    UserApp->>Driver: Open DB connection with DSN (includes token file path)
+    Driver->>Driver: Read JWT token from file
+    Driver->>MySQL: Send handshake packet (includes plugin name)
+    MySQL->>Driver: Request authentication (plugin switch)
+    Driver->>MySQL: Send Auth Packet:<br/>[0x01][len][JWT token]
+    MySQL->>Driver: Validate JWT with OIDC provider
+    MySQL-->>Driver: Auth success or failure
+    Driver-->>UserApp: Connection established or error
+```
+
 ## Protocol Reference
 
 According to the [MySQL documentation](https://dev.mysql.com/doc/dev/mysql-server/latest/page_protocol_connection_phase_packets_protocol_handshake_response.html),  
